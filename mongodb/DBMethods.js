@@ -39,8 +39,26 @@ const createIssue = (projectName, issue, done) => {
         }
     });
 };
-const getIssues = () => {
 
+const getIssues = (projectName, filter, done) => {
+    Project.findOne({project_name: projectName}, (err, projectFound) => {
+        if(err) console.error(err);
+        if(!projectFound){
+            done("No project found by the name: " + projectName);
+        } else {
+            let findIssues = Issue.find({_id: {$in: projectFound.issues}});
+            // filter issues if filters are provided.
+            if(Object.keys(filter).length > 0){
+                findIssues.find(filter);
+            }
+            findIssues.select('-__v');
+
+            findIssues.exec((err, foundIssues) => {
+                if(err) return console.error(err);
+                done(null, foundIssues);
+            });
+        }
+    })
 };
 const updateIssue = () => {
 

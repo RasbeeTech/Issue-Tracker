@@ -9,11 +9,18 @@ module.exports = function (app) {
   app.route('/api/issues/:project')
   
     .get((req, res) => {
+      let filter = req.query;
       let project = req.params.project;
-      let issue = {
-        problem: "issue"
-      };
-      console.log("req.body: ", req.body);
+
+      console.log("filter: ", filter);
+
+      getIssues(project, filter, (err, issues) => {
+        if(err){
+          res.json({error: err});
+          return;
+        }
+        res.json(issues);
+      });
     })
     
     .post((req, res) => {
