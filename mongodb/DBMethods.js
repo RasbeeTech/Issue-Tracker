@@ -82,8 +82,11 @@ const updateIssue = (updates, done) => {
         }
     });
 };
-const deleteIssue = () => {
-
+const deleteIssue = (issueId, done) => {
+    Issue.findOneAndDelete({_id: issueId}, (err, deletedIssue) => {
+        if(err) console.error(err)
+        done(null, deletedIssue);
+    })
 };
 
 module.exports = {
