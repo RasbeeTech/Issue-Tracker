@@ -65,7 +65,7 @@ const updateIssue = (updates, done) => {
     let findIssue = Issue.findOne({_id: updates._id});
     findIssue.select('-__v');
     findIssue.exec((err, issueFound) => {
-        if(err) return console.error(err);
+        if(err) return done("error");
         if(!issueFound) done('No matching _id');
         else {
             if(updates.issue_title) issueFound.issue_title = updates.issue_title;
@@ -84,7 +84,7 @@ const updateIssue = (updates, done) => {
 };
 const deleteIssue = (issueId, done) => {
     Issue.findOneAndDelete({_id: issueId}, (err, deletedIssue) => {
-        if(err) console.error(err)
+        if(err) return done("error");
         done(null, deletedIssue);
     })
 };

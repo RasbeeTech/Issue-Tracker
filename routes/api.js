@@ -73,7 +73,6 @@ module.exports = function (app) {
     })
     
     .delete((req, res) => {
-      let project = req.params.project;
       let { _id } = req.body;
       if(!_id) return res.json({ error: 'missing _id' });
       deleteIssue(_id, (err, removed) => {
