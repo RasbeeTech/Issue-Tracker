@@ -5,7 +5,7 @@ const { Project } = require('./DB.js');
 
 const createIssue = (projectName, issue, done) => {
     Project.findOne({project_name: projectName}, (err, foundProject) => {
-        if(err) console.log(err);
+        if(err) return console.error(err);
         let newIssue = new Issue({
             issue_title: issue.title,
             issue_text: issue.text,
@@ -18,13 +18,13 @@ const createIssue = (projectName, issue, done) => {
         });
         if(!foundProject){
             newIssue.save((err, data) => {
-                if(err) console.error(err);
+                if(err) return console.error(err);
                 let newProject = new Project({
                     project_name: projectName,
                     issues: [data._id]
                 });
                 newProject.save((err) => {
-                    if(err) console.error(err);
+                    if(err) return console.error(err);
                     done(null, newIssue);
                 });
             });
@@ -32,7 +32,7 @@ const createIssue = (projectName, issue, done) => {
             newIssue.save((err, data) => {
                 foundProject.issues.push(data._id);
                 foundProject.save((err) => {
-                    if(err) console.error(err);
+                    if(err) return console.error(err);
                     done(null, newIssue);
                 });
             });
@@ -42,7 +42,7 @@ const createIssue = (projectName, issue, done) => {
 
 const getIssues = (projectName, filter, done) => {
     Project.findOne({project_name: projectName}, (err, projectFound) => {
-        if(err) console.error(err);
+        if(err) return console.error(err);
         if(!projectFound){
             done("No project found by the name: " + projectName);
         } else {
@@ -60,8 +60,27 @@ const getIssues = (projectName, filter, done) => {
         }
     })
 };
-const updateIssue = () => {
 
+const updateIssue = (updates, done) => {
+    let findIssue = Issue.findOne({_id: updates._id});
+    findIssue.select('-__v');
+    findIssue.exec((err, issueFound) => {
+        if(err) return console.error(err);
+        if(!issueFound) done('No matching _id');
+        else {
+            if(updates.issue_title) issueFound.issue_title = updates.issue_title;
+            if(updates.issue_text) issueFound.issue_text = updates.issue_text;
+            if(updates.created_by) issueFound.created_by = updates.created_by;
+            if(updates.assigned_to) issueFound.assigned_to = updates.assigned_to;
+            if(updates.status_text) issueFound.status_text = updates.status_text;
+            if(updates.open) issueFound.open = updates.open;
+            issueFound.updated_on = new Date();
+            issueFound.save((err, updatedData) => {
+                if(err) return console.error(err);
+                done(null, updatedData);
+            });
+        }
+    });
 };
 const deleteIssue = () => {
 

@@ -12,8 +12,6 @@ module.exports = function (app) {
       let filter = req.query;
       let project = req.params.project;
 
-      console.log("filter: ", filter);
-
       getIssues(project, filter, (err, issues) => {
         if(err){
           res.json({error: err});
@@ -33,7 +31,6 @@ module.exports = function (app) {
         statusText: req.body.status_text
       };
       if(!issue.title || !issue.text || !issue.createdBy){
-        console.log('required field(s) missing')
         res.json({error: 'required field(s) missing'});
         return;
       }
@@ -54,8 +51,25 @@ module.exports = function (app) {
     })
     
     .put((req, res) => {
-      let project = req.params.project;
-      
+      let { _id } = req.body;
+
+      // Ensure required fields are filled out.
+      if(!_id) return res.json({ error: 'missing _id' });
+      if(
+        req.body.issue_title == '' && req.body.issue_text == '' &&
+        req.body.created_by == '' && req.body.assigned_to == '' &&
+        req.body.status_text == '' && !req.body.open
+      ){
+        return res.json({error: 'no update field(s) sent', _id: _id })
+      }
+      // Update issue.
+      updateIssue(req.body, (err, updatedIssue) => {
+        if(err) return res.json({ error: 'could not update', _id: _id });
+        res.json({
+          result: 'successfully updated',
+          _id: updatedIssue._id
+        });
+      });
     })
     
     .delete((req, res) => {
