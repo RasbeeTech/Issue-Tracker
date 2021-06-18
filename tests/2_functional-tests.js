@@ -151,7 +151,7 @@ suite('Functional Tests', function() {
                 .end((err, res) => {
                     assert.equal(res.status, 200);
                     assert.equal(res.type, 'application/json');
-                    assert.equal(res.body.error, 'missing_id')
+                    assert.equal(res.body.error, 'missing _id')
                     done();
                 }); 
         });
