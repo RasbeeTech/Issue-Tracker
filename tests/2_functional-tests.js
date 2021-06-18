@@ -6,6 +6,7 @@ const server = require('../server');
 chai.use(chaiHttp);
 
 suite('Functional Tests', function() {
+    let projectId;
     suite('Post requests:', () => {
         test('1. Create an issue with every field', (done) => {
             chai.request(server)
@@ -19,6 +20,7 @@ suite('Functional Tests', function() {
                     status_text: 'Okay',
                 })
                 .end((err, res) => {
+                    projectId = res.body._id;
                     assert.equal(res.status, 200);
                     assert.equal(res.type, 'application/json');
                     assert.equal(res.body.issue_title, 'Api Tester');
@@ -60,6 +62,66 @@ suite('Functional Tests', function() {
                     assert.equal(res.body.error, 'required field(s) missing');
                     done();
                 });
+        });
+    });
+
+    suite('Get requests:', () => {
+        test('4. View issues on a project', (done) => {
+            chai.request(server)
+                .get('/api/issues/apitest')
+                .end((err, res) => {
+                    assert.equal(res.status, 200);
+                    assert.equal(res.type, 'application/json');
+                    assert.isArray(res.body);
+                    done();
+                });
+        });
+        test('5. View issues on a project with one filter', (done) => {
+            chai.request(server)
+                .get('/api/issues/apitest?issue_title=Api Tester')
+                .end((err, res) => {
+                    assert.equal(res.status, 200);
+                    assert.equal(res.type, 'application/json');
+                    assert.isArray(res.body);
+                    // Test for issue title in each issue returned.
+                    res.body.forEach((issue) => {
+                        assert.equal(issue.issue_title, 'Api Tester');
+                    });
+                    done();
+                });
+        });
+        test('6. View issues on a project with multiple filters', (done) => {
+            chai.request(server)
+                .get('/api/issues/apitest?status_text=Okay&created_by=Mike')
+                .end((err, res) => {
+                    assert.equal(res.status, 200);
+                    assert.equal(res.type, 'application/json');
+                    assert.isArray(res.body);
+                    // Test for filters in all issues returned.
+                    res.body.forEach((issue) => {
+                        assert.equal(issue.created_by, 'Mike');
+                        assert.equal(issue.status_text, 'Okay');
+                    });
+                    done();
+                });
+        });
+    });
+    suite('Put requests:', () => {
+        test('7. Update one field on an issue', (done) => {
+            chai.request(server)
+                .put('/api/issues/apitest')
+                .type('form')
+                .send({
+                    _id: projectId,
+                    created_by: 'Jay'
+                })
+                .end((err, res) => {
+                    assert.equal(res.status, 200);
+                    assert.equal(res.type, 'application/json');
+                    assert.equal(res.body._id, projectId);
+                    assert.equal(res.body.result, 'successfully updated')
+                    done();
+                }); 
         });
     });
 });
