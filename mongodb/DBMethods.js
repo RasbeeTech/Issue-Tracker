@@ -85,6 +85,7 @@ const updateIssue = (updates, done) => {
 const deleteIssue = (issueId, done) => {
     Issue.findOneAndDelete({_id: issueId}, (err, deletedIssue) => {
         if(err) return done("error");
+        if(!deletedIssue) return done('error');
         done(null, deletedIssue);
     })
 };
