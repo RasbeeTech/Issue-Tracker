@@ -123,5 +123,115 @@ suite('Functional Tests', function() {
                     done();
                 }); 
         });
+        test('8. Update multiple fields on an issue', (done) => {
+            chai.request(server)
+                .put('/api/issues/apitest')
+                .type('form')
+                .send({
+                    _id: projectId,
+                    issue_title: 'update test',
+                    open: false
+                })
+                .end((err, res) => {
+                    assert.equal(res.status, 200);
+                    assert.equal(res.type, 'application/json');
+                    assert.equal(res.body._id, projectId);
+                    assert.equal(res.body.result, 'successfully updated')
+                    done();
+                }); 
+        });
+        test('9. Update an issue with missing', (done) => {
+            chai.request(server)
+                .put('/api/issues/apitest')
+                .type('form')
+                .send({
+                    issue_title: 'update test',
+                    open: false
+                })
+                .end((err, res) => {
+                    assert.equal(res.status, 200);
+                    assert.equal(res.type, 'application/json');
+                    assert.equal(res.body.error, 'missing_id')
+                    done();
+                }); 
+        });
+        test('10. Update an issue with no fields to update', (done) => {
+            chai.request(server)
+                .put('/api/issues/apitest')
+                .type('form')
+                .send({
+                    _id: projectId
+                })
+                .end((err, res) => {
+                    console.log('come back');
+                    assert.equal(res.status, 200);
+                    assert.equal(res.type, 'application/json');
+                    assert.equal(res.body._id, projectId);
+                    done();
+                }); 
+        });
+        test('11. Update an issue with an invalid _id', (done) => {
+            chai.request(server)
+                .put('/api/issues/apitest')
+                .type('form')
+                .send({
+                    _id: 'invalid _id',
+                    created_by: 'George',
+                    open: false
+                })
+                .end((err, res) => {
+                    assert.equal(res.status, 200);
+                    assert.equal(res.type, 'application/json');
+                    assert.equal(res.body._id, 'invalid _id');
+                    assert.equal(res.body.error, 'could not update');
+                    done();
+                }); 
+        });
+    });
+    suite('Delete requests:', () => {
+        test('12. Delete an issue', (done) => {
+            chai.request(server)
+                .delete('/api/issues/apitest')
+                .type('form')
+                .send({
+                    _id: projectId
+                })
+                .end((err, res) => {
+                    assert.equal(res.status, 200);
+                    assert.equal(res.type, 'application/json');
+                    assert.equal(res.body.result, 'successfully deleted');
+                    assert.equal(res.body._id, projectId);
+                    done();
+                });
+        });
+        test('13. Delete an issue with an invalid _id', (done) => {
+            chai.request(server)
+                .delete('/api/issues/apitest')
+                .type('form')
+                .send({
+                    _id: 'invalid _id'
+                })
+                .end((err, res) => {
+                    assert.equal(res.status, 200);
+                    assert.equal(res.type, 'application/json');
+                    assert.equal(res.body.error, 'could not delete');
+                    assert.equal(res.body._id, 'invalid _id');
+                    done();
+                });
+        });
+        test('14. Delete an issue with missing _id', (done) => {
+            chai.request(server)
+                .delete('/api/issues/apitest')
+                .type('form')
+                .send({
+                    id: null
+                })
+                .end((err, res) => {
+                    assert.equal(res.status, 200);
+                    assert.equal(res.type, 'application/json');
+                    assert.equal(res.body.error, 'missing _id');
+                    done();
+                });
+        });
     });
 });
